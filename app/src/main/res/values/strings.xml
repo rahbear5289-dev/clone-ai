@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Luna</string>
+    <string name="jarvis_title">Luna-X</string>
+    <string name="app_title_luna">LUNA</string>
+    <string name="app_title_suffix">-X</string>
+
+    <string name="state_idle">IDLE</string>
+    <string name="state_listening">LISTENING</string>
+    <string name="state_thinking">THINKING</string>
+    <string name="state_speaking">SPEAKING</string>
+
+    <string name="btn_on">ON</string>
+    <string name="btn_off">OFF</string>
+    <string name="btn_offline">OFFLINE</string>
+    <string name="btn_start_ai">START AI</string>
+    <string name="btn_online">ONLINE</string>
+    <string name="btn_stop_ai">STOP AI</string>
+    <string name="slide_to_start">SLIDE TO START »»</string>
+    <string name="slide_to_stop">«« SLIDE TO STOP</string>
+    <string name="app_title_Luna">Luna</string>
+    <string name="app_title_mx">-MX</string>
+    <string name="status_ready">READY</string>
+    <string name="status_live">LIVE</string>
+    <string name="status_connecting">CONNECTING&#8230;</string>
+    <string name="status_disconnected">OFFLINE</string>
+
+    <string name="settings_title">SETTINGS</string>
+    <string name="api_key_label">Gemini API Key</string>
+    <string name="api_key_hint">Paste your Gemini API key</string>
+    <string name="model_label">AI Model</string>
+    <string name="voice_label">Voice</string>
+    <string name="personality_label">Personality</string>
+    <string name="username_label">User Name</string>
+    <string name="username_hint">e.g. Tony Stark, Sir, Boss (optional)</string>
+
+    <string name="chat_history_title">Conversation History</string>
+    <string name="no_history">No conversation turns yet.</string>
+    <string name="clear_history">Clear History</string>
+
+    <string name="assistant_mode">Assistant Mode</string>
+    <string name="history_label">History</string>
+    <string name="desc_mute_mic">Mute or Unmute Mic</string>
+    <string name="desc_eye">Vision Mode</string>
+    <string name="desc_start_ai">Start AI Session</string>
+    <string name="desc_stop_ai">Stop AI Session</string>
+    <string name="desc_signal">Network Status</string>
+    <string name="desc_back">Back</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_paste">Paste from clipboard</string>
+    <string name="chat_label_you">YOU</string>
+    <string name="chat_label_jarvis">LUNA-X</string>
+    <string name="accessibility_service_label">Luna Accessibility</string>
+    <string name="accessibility_service_description">Lets Luna tap Send, Back, Home, and verify which app is on screen after you grant this service. Used only for voice-driven assistive control.</string>
+    <string name="notification_listener_label">Luna Notification Access</string>
+    <string name="state_executing">EXECUTING</string>
+    <string name="state_screen_viewing">SCREEN VIEWING</string>
+    <string name="state_background">BACKGROUND</string>
+    <string name="state_error">ERROR</string>
+    <string name="state_permission">PERMISSION REQUIRED</string>
+</resources>

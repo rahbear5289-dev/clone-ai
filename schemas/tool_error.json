@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaToolError",
+  "description": "Unified canonical error schema for all tool and runtime failures in LUNA AI.",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Standardized uppercase error code",
+      "enum": [
+        "PERMISSION_REQUIRED",
+        "APP_NOT_FOUND",
+        "TARGET_NOT_FOUND",
+        "TIMEOUT",
+        "EXECUTION_FAILED",
+        "INVALID_ARGUMENT",
+        "CONFIRMATION_REQUIRED",
+        "HARDWARE_UNAVAILABLE",
+        "NETWORK_ERROR",
+        "FEATURE_NOT_SUPPORTED",
+        "RATE_LIMITED",
+        "SERVICE_DISCONNECTED",
+        "UNKNOWN_ERROR"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable explanation of why the action failed"
+    },
+    "recoverable": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the caller or user can recover by re-trying or granting permission"
+    },
+    "action": {
+      "type": "string",
+      "description": "Suggested recovery action (e.g. 'request_permission', 'ask_user', 'retry', 'abort')"
+    },
+    "details": {
+      "type": "object",
+      "description": "Optional debug details or error attributes"
+    }
+  },
+  "required": ["code", "message", "recoverable"]
+}

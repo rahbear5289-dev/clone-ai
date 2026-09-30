@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "storage": {
+    "durable_db": "sqlite",
+    "vector_db": "qdrant",
+    "redis_cache": true
+  },
+  "layers": {
+    "short_term": { "ttl_seconds": 3600 },
+    "working": { "ttl_seconds": 600 },
+    "conversation": { "max_turns": 100 },
+    "long_term": { "enabled": true, "auto_summarize": true },
+    "semantic": { "similarity_threshold": 0.72, "top_k": 5 },
+    "episodic": { "retention_days": 90 }
+  },
+  "privacy": {
+    "filter_sensitive_data": true,
+    "require_user_opt_in": true,
+    "allow_export": true,
+    "allow_clear": true
+  }
+}

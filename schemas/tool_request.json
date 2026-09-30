@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaToolRequest",
+  "description": "Standard schema for invoking tools across LUNA AI runtime and agent planner.",
+  "type": "object",
+  "properties": {
+    "tool": {
+      "type": "string",
+      "description": "Identifier of the target tool to invoke"
+    },
+    "action": {
+      "type": "string",
+      "description": "Specific action to perform within the tool"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Key-value input parameters defined by the tool's input schema"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Active conversation session ID"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user making the request"
+    },
+    "confirmation_token": {
+      "type": "string",
+      "description": "Token proving user confirmed execution for high-risk tools"
+    }
+  },
+  "required": ["tool", "parameters"]
+}

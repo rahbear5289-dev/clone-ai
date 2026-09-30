@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaToolResponse",
+  "description": "Unified canonical tool response envelope for all LUNA AI tool executions (success and failure).",
+  "type": "object",
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether the tool operation succeeded"
+    },
+    "tool": {
+      "type": "string",
+      "description": "Identifier of the tool that executed (e.g. application_control, youtube, phone_call)"
+    },
+    "action": {
+      "type": "string",
+      "description": "Specific action performed (e.g. open, close, search, play, capture)"
+    },
+    "target": {
+      "type": "string",
+      "description": "Target entity of the action (e.g. 'Chrome', 'MrBeast', '+1234567890')"
+    },
+    "spoken": {
+      "type": "string",
+      "description": "Optional conversational feedback string for voice response"
+    },
+    "execution_time_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Measured duration of tool execution in milliseconds"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only if post-execution state was positively verified (e.g. process checked, stream active)"
+    },
+    "data": {
+      "type": "object",
+      "description": "Structured output data returned by the tool"
+    },
+    "error": {
+      "$ref": "./tool_error.json"
+    }
+  },
+  "required": ["success", "tool", "execution_time_ms"]
+}

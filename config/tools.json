@@ -1,0 +1,58 @@
+{
+  "tools": [
+    {
+      "name": "application_control",
+      "risk": "medium",
+      "requires_confirmation": false,
+      "timeout_ms": 3500
+    },
+    {
+      "name": "window_management",
+      "risk": "low",
+      "requires_confirmation": false,
+      "timeout_ms": 2500
+    },
+    {
+      "name": "youtube_control",
+      "risk": "low",
+      "requires_confirmation": false,
+      "timeout_ms": 5000
+    },
+    {
+      "name": "phone_call",
+      "risk": "high",
+      "requires_confirmation": true,
+      "timeout_ms": 6000
+    },
+    {
+      "name": "whatsapp_messaging",
+      "risk": "high",
+      "requires_confirmation": true,
+      "timeout_ms": 8000
+    },
+    {
+      "name": "location_share",
+      "risk": "high",
+      "requires_confirmation": true,
+      "timeout_ms": 6000
+    },
+    {
+      "name": "camera_control",
+      "risk": "medium",
+      "requires_confirmation": false,
+      "timeout_ms": 4000
+    },
+    {
+      "name": "screen_recognition",
+      "risk": "medium",
+      "requires_confirmation": false,
+      "timeout_ms": 4000
+    },
+    {
+      "name": "code_assistant",
+      "risk": "low",
+      "requires_confirmation": false,
+      "timeout_ms": 10000
+    }
+  ]
+}

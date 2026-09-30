@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaVoiceState",
+  "description": "Voice state machine states and transitions for LUNA AI assistant.",
+  "type": "string",
+  "enum": [
+    "IDLE",
+    "WAKE_LISTENING",
+    "LISTENING",
+    "THINKING",
+    "EXECUTING",
+    "SPEAKING",
+    "ERROR",
+    "SLEEP"
+  ]
+}

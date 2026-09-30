@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Luna-x</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+<canvas id="reactorCanvas"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('reactorCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = 360;
+  let height = 360;
+  let dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    width = rect.width || window.innerWidth || 360;
+    height = rect.height || window.innerHeight || 360;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+  }
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 40);
+
+  // State variables
+  let isOnline = false;
+  let curOnlineTransition = 0.0;
+  let currentState = 'offline';
+  let audioLevel = 0.0;
+  let targetAudioLevel = 0.0;
+  let time = 0;
+  let outerRotAngle = 0;
+  let triangleRotAngle = 0;
+  let isAiSpeakingExplicit = false;
+
+  // Dynamic acoustic vibration and pulsing
+  let speakBounceTarget = 0;
+  let speakBounceY = 0;
+  let speakJitterX = 0;
+  let speakJitterY = 0;
+  let pulseScale = 1.0;
+
+  window.setSessionActive = function(active) {
+    isOnline = !!active;
+  };
+
+  window.setOrbState = function(stateName, level, isSpeakingFlag) {
+    const s = (stateName || 'offline').toLowerCase();
+    currentState = s;
+    if (s === 'offline' || s === 'standby' || s === 'disconnected') {
+      isOnline = false;
+    } else {
+      isOnline = true;
+    }
+    if (typeof level === 'number') {
+      targetAudioLevel = Math.max(0, Math.min(1, level));
+    }
+    if (typeof isSpeakingFlag === 'boolean') {
+      isAiSpeakingExplicit = isSpeakingFlag;
+    } else {
+      isAiSpeakingExplicit = (s === 'speaking' || s === 'call_active');
+    }
+  };
+
+  window.setAudioLevel = function(level) {
+    if (typeof level === 'number') {
+      targetAudioLevel = Math.max(0, Math.min(1, level));
+    }
+  };
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function render() {
+    if (canvas.clientWidth > 0 && (Math.abs(canvas.clientWidth - width) > 1 || Math.abs(canvas.clientHeight - height) > 1)) {
+      resize();
+    }
+    time += 1;
+
+    const targetTransition = isOnline ? 1.0 : 0.0;
+    curOnlineTransition = lerp(curOnlineTransition, targetTransition, 0.08);
+
+    audioLevel = lerp(audioLevel, targetAudioLevel, 0.28);
+    targetAudioLevel = lerp(targetAudioLevel, 0, 0.04);
+
+    // AI speaking state (high energy reaction matching luna.mp4)
+    const isSpeaking = isOnline && (currentState === 'speaking' || currentState === 'call_active' || isAiSpeakingExplicit);
+    const speakEnergy = isSpeaking ? (0.50 + audioLevel * 0.50) : (audioLevel * 0.25);
+
+    // Dynamic cybernetic vibration & scaling matching luna.mp4 00:11-00:14
+    if (isSpeaking) {
+      // Rapid intense acoustic vibration
+      const jitterAmp = 3.5 + speakEnergy * 5.5;
+      speakJitterX = (Math.sin(time * 0.95) * 0.6 + Math.cos(time * 1.6) * 0.4) * jitterAmp;
+      speakJitterY = (Math.cos(time * 1.1) * 0.6 + Math.sin(time * 1.8) * 0.4) * jitterAmp;
+
+      // Vertical bounce
+      const bounceAmp = 4.0 + speakEnergy * 6.0;
+      speakBounceTarget = Math.sin(time * 0.22) * bounceAmp;
+
+      // Pulse scaling: core zooms up dynamically with speech
+      const targetScale = 1.0 + speakEnergy * 0.16;
+      pulseScale = lerp(pulseScale, targetScale, 0.25);
+    } else {
+      speakJitterX = lerp(speakJitterX, 0, 0.15);
+      speakJitterY = lerp(speakJitterY, 0, 0.15);
+      speakBounceTarget = 0;
+      pulseScale = lerp(pulseScale, isOnline ? 1.02 : 1.0, 0.1);
+    }
+    speakBounceY = lerp(speakBounceY, speakBounceTarget, 0.25);
+
+    // Rotation speeds
+    const baseRot = isOnline ? (0.003 + (isSpeaking ? speakEnergy * 0.015 : 0.002)) : 0.001;
+    outerRotAngle += baseRot;
+
+    // Center Triangles continuous spinning wheel
+    const triSpeed = isOnline 
+      ? (isSpeaking ? (0.045 + speakEnergy * 0.065) : 0.016)
+      : 0.003;
+    triangleRotAngle += triSpeed;
+
+    ctx.clearRect(0, 0, width, height);
+
+    const cx = width / 2 + speakJitterX;
+    const cy = height / 2 + speakBounceY + speakJitterY;
+    const baseR = Math.min(width, height) * 0.42;
+
+    const breathe = Math.sin(time * 0.05) * (1.5 + speakEnergy * 4);
+    const effectiveR = (baseR + breathe) * pulseScale;
+
+    // =========================================================================
+    // LAYER 1: AMBIENT DEEP CRIMSON RED CORE GLOW
+    // =========================================================================
+    ctx.save();
+    const glowR = effectiveR * 1.25;
+    const ambientGrad = ctx.createRadialGradient(cx, cy, effectiveR * 0.2, cx, cy, glowR);
+    if (isOnline) {
+      const redAlpha = isSpeaking ? (0.35 + speakEnergy * 0.35) : 0.22;
+      ambientGrad.addColorStop(0, `rgba(255, 30, 39, ${redAlpha})`);
+      ambientGrad.addColorStop(0.5, `rgba(180, 10, 20, ${redAlpha * 0.5})`);
+      ambientGrad.addColorStop(0.85, `rgba(60, 4, 8, ${redAlpha * 0.2})`);
+      ambientGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    } else {
+      ambientGrad.addColorStop(0, 'rgba(120, 15, 20, 0.15)');
+      ambientGrad.addColorStop(0.6, 'rgba(40, 5, 8, 0.08)');
+      ambientGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    }
+    ctx.fillStyle = ambientGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 2: OUTER TECHNICAL HUD TICKS & NOTCHES (NEON RED)
+    // =========================================================================
+    ctx.save();
+    // Outer dashed ring
+    ctx.beginPath();
+    ctx.setLineDash([4, 8]);
+    ctx.arc(cx, cy, effectiveR * 1.08, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 30, 39, ${0.45 + speakEnergy * 0.35})`;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Solid fine circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, effectiveR * 1.03, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255, 30, 39, ${0.40 + speakEnergy * 0.30})`;
+    ctx.lineWidth = 1.0;
+    ctx.stroke();
+
+    // 4 Cardinal technical ticks (Top, Right, Bottom, Left)
+    const cardinalAngles = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
+    cardinalAngles.forEach((ang) => {
+      const r1 = effectiveR * 1.03;
+      const r2 = effectiveR * 1.15;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+      ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+      ctx.strokeStyle = '#FF1E27';
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = '#FF1E27';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+    });
+
+    // 40 Perimeter notch ticks
+    const tickCount = 40;
+    for (let i = 0; i < tickCount; i++) {
+      const angle = (i / tickCount) * Math.PI * 2 + outerRotAngle * 0.5;
+      const isMajor = i % 4 === 0;
+      const tickLen = isMajor ? 7 : 3.5;
+      const r1 = effectiveR * 1.00;
+      const r2 = r1 + tickLen;
+
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
+      ctx.lineTo(cx + Math.cos(angle) * r2, cy + Math.sin(angle) * r2);
+      ctx.strokeStyle = isMajor
+        ? `rgba(255, 45, 50, ${0.75 + speakEnergy * 0.25})`
+        : 'rgba(200, 20, 30, 0.40)';
+      ctx.lineWidth = isMajor ? 1.8 : 1.0;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 3: 10 CYLINDRICAL GLOWING REACTOR CELLS / COILS (PERIMETER)
+    // =========================================================================
+    const cellRingR = effectiveR * 0.82;
+    const cellWidth = effectiveR * 0.125;
+    const cellHeight = effectiveR * 0.24;
+
+    ctx.save();
+    // Dark track perimeter boundary
+    ctx.beginPath();
+    ctx.arc(cx, cy, effectiveR * 0.96, 0, Math.PI * 2);
+    ctx.arc(cx, cy, effectiveR * 0.68, 0, Math.PI * 2, true);
+    ctx.fillStyle = 'rgba(12, 4, 6, 0.96)';
+    ctx.fill();
+
+    // Outer & inner track red borders
+    ctx.beginPath();
+    ctx.arc(cx, cy, effectiveR * 0.96, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 30, 39, 0.75)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, effectiveR * 0.68, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 45, 55, 0.90)';
+    ctx.lineWidth = 2.0;
+    ctx.stroke();
+
+    // Draw the 10 coils
+    const cellCount = 10;
+    for (let i = 0; i < cellCount; i++) {
+      const angle = (i / cellCount) * Math.PI * 2 - Math.PI / 2;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+
+      const cellY = -cellRingR;
+      const cellX = -cellWidth / 2;
+
+      // Small metallic contact pins (inner and outer)
+      ctx.fillStyle = '#FFA040';
+      ctx.fillRect(-2, cellY - cellHeight / 2 - 4, 4, 4);
+      ctx.fillRect(-2, cellY + cellHeight / 2, 4, 4);
+
+      // Glowing Cell Body (Golden Amber / Red gradient like in luna.mp4)
+      ctx.shadowColor = 'rgba(255, 60, 40, 0.90)';
+      ctx.shadowBlur = 10 + speakEnergy * 18;
+
+      ctx.beginPath();
+      roundRect(ctx, cellX, cellY - cellHeight / 2, cellWidth, cellHeight, cellWidth * 0.45);
+
+      const cellGrad = ctx.createLinearGradient(cellX, 0, cellX + cellWidth, 0);
+      cellGrad.addColorStop(0, '#FF3020');
+      cellGrad.addColorStop(0.25, '#FFB703');
+      cellGrad.addColorStop(0.5, '#FFF6B0');
+      cellGrad.addColorStop(0.75, '#FFB703');
+      cellGrad.addColorStop(1, '#FF2010');
+      ctx.fillStyle = cellGrad;
+      ctx.fill();
+
+      // Bright inner core reflection line
+      ctx.beginPath();
+      ctx.moveTo(0, cellY - cellHeight / 2 + 3);
+      ctx.lineTo(0, cellY + cellHeight / 2 - 3);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Crisp cell outline
+      ctx.beginPath();
+      roundRect(ctx, cellX, cellY - cellHeight / 2, cellWidth, cellHeight, cellWidth * 0.45);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 4: INNER SEGMENTED RED RING
+    // =========================================================================
+    ctx.save();
+    const segRingR = effectiveR * 0.67;
+    const segCount = 10;
+    for (let s = 0; s < segCount; s++) {
+      const startA = (s / segCount) * Math.PI * 2 - Math.PI / 2 + 0.08;
+      const endA = ((s + 1) / segCount) * Math.PI * 2 - Math.PI / 2 - 0.08;
+      ctx.beginPath();
+      ctx.arc(cx, cy, segRingR, startA, endA);
+      ctx.strokeStyle = 'rgba(255, 30, 39, 0.95)';
+      ctx.lineWidth = 3.6;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 5: ARC-REACTOR INNER RED CORE CHAMBER (MATCHING USER PHOTO)
+    // =========================================================================
+    // User requirement: Before speaking / normal ready status, the inner chamber has
+    // the intense glowing red radiant aura from the user's photo. After speaking,
+    // it smoothly fades to jet black void.
+    const coreR = effectiveR * 0.64;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+
+    // State transition for red background aura:
+    // When idle/listening/ready (before speaking), redIntensity is high (1.0).
+    // When speaking completes or in dark void mode, it transitions to black.
+    const isSpeakingNow = isOnline && (currentState === 'speaking' || currentState === 'call_active' || isAiSpeakingExplicit);
+    const redChamberAlpha = isOnline ? (isSpeakingNow ? 0.08 : 0.88) : 0.45;
+
+    const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+    if (isOnline) {
+      if (!isSpeakingNow) {
+        // High-energy radiant crimson red core aura matching user photo
+        coreGrad.addColorStop(0, `rgba(255, 30, 39, ${redChamberAlpha})`);
+        coreGrad.addColorStop(0.28, `rgba(220, 18, 28, ${redChamberAlpha * 0.92})`);
+        coreGrad.addColorStop(0.55, `rgba(160, 10, 18, ${redChamberAlpha * 0.75})`);
+        coreGrad.addColorStop(0.82, `rgba(70, 4, 8, ${redChamberAlpha * 0.45})`);
+        coreGrad.addColorStop(1.0, '#000000');
+        ctx.fillStyle = coreGrad;
+        ctx.shadowColor = '#FF1E27';
+        ctx.shadowBlur = 18;
+      } else {
+        // Deep black vacuum void when speaking/after speaking
+        coreGrad.addColorStop(0, 'rgba(30, 4, 6, 0.95)');
+        coreGrad.addColorStop(0.3, 'rgba(15, 2, 3, 0.98)');
+        coreGrad.addColorStop(0.7, '#000000');
+        coreGrad.addColorStop(1.0, '#000000');
+        ctx.fillStyle = coreGrad;
+        ctx.shadowColor = 'rgba(255, 30, 39, 0.45)';
+        ctx.shadowBlur = 12 + speakEnergy * 14;
+      }
+    } else {
+      coreGrad.addColorStop(0, 'rgba(18, 2, 4, 0.8)');
+      coreGrad.addColorStop(0.7, '#000000');
+      coreGrad.addColorStop(1.0, '#000000');
+      ctx.fillStyle = coreGrad;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+      ctx.shadowBlur = 0;
+    }
+    ctx.fill();
+
+    // Edge border for inner chamber
+    ctx.strokeStyle = isOnline ? 'rgba(255, 30, 39, 0.95)' : 'rgba(180, 20, 30, 0.45)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 6: 3 INVERTED EQUILATERAL RED TRIANGLES (SPINNING WHEEL)
+    // =========================================================================
+    ctx.save();
+    const triDist = coreR * 0.52;
+    const triBase = coreR * 0.33;
+    const triHeight = coreR * 0.36;
+
+    // Angles: 90° (Bottom), 330° (Top-Right), 210° (Top-Left)
+    const triAngles = [
+      Math.PI / 2,
+      -Math.PI / 6,
+      Math.PI + Math.PI / 6
+    ];
+
+    triAngles.forEach((angle) => {
+      ctx.save();
+      ctx.translate(cx, cy);
+      // ROTATE WITH triangleRotAngle! (Continuous mechanical spin from luna.mp4)
+      ctx.rotate(angle + triangleRotAngle);
+
+      const tipY = triDist + triHeight / 2;
+      const baseY = triDist - triHeight / 2;
+      const halfBase = triBase / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(0, tipY);
+      ctx.lineTo(-halfBase, baseY);
+      ctx.lineTo(halfBase, baseY);
+      ctx.closePath();
+
+      // Deep Crimson / Neon Red glowing gradient
+      const triGrad = ctx.createLinearGradient(0, baseY, 0, tipY);
+      triGrad.addColorStop(0, '#FF4D55');
+      triGrad.addColorStop(0.6, '#FF1E27');
+      triGrad.addColorStop(1, '#B30006');
+      ctx.fillStyle = triGrad;
+
+      ctx.shadowColor = '#FF1E27';
+      ctx.shadowBlur = 12 + speakEnergy * 16;
+      ctx.fill();
+
+      // Crisp white/red edge
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+
+      ctx.restore();
+    });
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 7: CENTER DISC & VIBRANT RED CORE PUPIL
+    // =========================================================================
+    ctx.save();
+    const pupilR = coreR * 0.28;
+    const redDotR = pupilR * 0.46;
+
+    // Outer soft pulse aura when speaking
+    if (speakEnergy > 0.05) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, pupilR * (1.2 + speakEnergy * 0.4), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 30, 39, ${speakEnergy * 0.45})`;
+      ctx.fill();
+    }
+
+    // Solid Crisp White Disc
+    ctx.beginPath();
+    ctx.arc(cx, cy, pupilR, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 10 + speakEnergy * 12;
+    ctx.fill();
+
+    // Solid Bright Red Center Pupil
+    ctx.beginPath();
+    ctx.arc(cx, cy, redDotR, 0, Math.PI * 2);
+    const redGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, redDotR);
+    redGrad.addColorStop(0, '#FF5E65');
+    redGrad.addColorStop(0.7, '#FF1E27');
+    redGrad.addColorStop(1, '#99000A');
+    ctx.fillStyle = redGrad;
+    ctx.shadowColor = '#FF1E27';
+    ctx.shadowBlur = 10 + speakEnergy * 14;
+    ctx.fill();
+    ctx.restore();
+
+    // =========================================================================
+    // LAYER 8: DYNAMIC SOUNDWAVE FLARE (WHEN SPEAKING)
+    // =========================================================================
+    if (isSpeaking && speakEnergy > 0.1) {
+      ctx.save();
+      ctx.beginPath();
+      const waveAmp = effectiveR * 0.20 * speakEnergy;
+      const waveFreq = 0.05;
+      ctx.moveTo(cx - effectiveR * 0.9, cy);
+      for (let x = cx - effectiveR * 0.9; x <= cx + effectiveR * 0.9; x += 5) {
+        const dist = Math.abs(x - cx);
+        const env = Math.sin((dist / (effectiveR * 0.9)) * Math.PI);
+        const y = cy + Math.sin(x * waveFreq + time * 0.2) * waveAmp * env;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(255, 45, 55, ${0.8 * speakEnergy})`;
+      ctx.lineWidth = 2.0;
+      ctx.shadowColor = '#FF1E27';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

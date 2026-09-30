@@ -1,0 +1,60 @@
+{
+  "permissions": [
+    {
+      "id": "microphone",
+      "name": "Microphone Access",
+      "required": true,
+      "description": "Required for voice conversation and wake word detection",
+      "os_permission": "android.permission.RECORD_AUDIO"
+    },
+    {
+      "id": "overlay",
+      "name": "Display Over Other Apps",
+      "required": true,
+      "description": "Required to display assistant HUD and trigger background app navigation",
+      "os_permission": "android.permission.SYSTEM_ALERT_WINDOW"
+    },
+    {
+      "id": "accessibility",
+      "name": "Accessibility Service",
+      "required": true,
+      "description": "Required for verified UI interaction, button taps, and window control",
+      "os_permission": "android.permission.BIND_ACCESSIBILITY_SERVICE"
+    },
+    {
+      "id": "notifications",
+      "name": "Push Notifications",
+      "required": false,
+      "description": "Required for foreground service status and user notifications",
+      "os_permission": "android.permission.POST_NOTIFICATIONS"
+    },
+    {
+      "id": "camera",
+      "name": "Camera Access",
+      "required": false,
+      "description": "Required for live camera vision, photos, and video recording",
+      "os_permission": "android.permission.CAMERA"
+    },
+    {
+      "id": "location",
+      "name": "GPS & Location",
+      "required": false,
+      "description": "Required for live location query and WhatsApp location sharing",
+      "os_permission": "android.permission.ACCESS_FINE_LOCATION"
+    },
+    {
+      "id": "phone",
+      "name": "Phone & Calls",
+      "required": false,
+      "description": "Required to place verified phone calls and control dialer",
+      "os_permission": "android.permission.CALL_PHONE"
+    },
+    {
+      "id": "contacts",
+      "name": "Contacts Access",
+      "required": false,
+      "description": "Required to resolve contact names for phone calls and WhatsApp messaging",
+      "os_permission": "android.permission.READ_CONTACTS"
+    }
+  ]
+}

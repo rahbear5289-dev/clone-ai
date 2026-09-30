@@ -1,0 +1,19 @@
+{
+  "benchmarks": {
+    "local_command_ack_target_ms": 200,
+    "fast_router_intent_target_ms": 50,
+    "screen_capture_target_ms": 300,
+    "camera_frame_target_ms": 250,
+    "tts_audio_first_chunk_target_ms": 400
+  },
+  "caching": {
+    "app_index_warm_on_startup": true,
+    "contacts_cache_ttl_sec": 300,
+    "screen_context_ttl_sec": 15
+  },
+  "lifecycle": {
+    "sleep_mode_inactivity_sec": 60,
+    "session_renewal_interval_minutes": 9,
+    "wake_lock_timeout_minutes": 10
+  }
+}

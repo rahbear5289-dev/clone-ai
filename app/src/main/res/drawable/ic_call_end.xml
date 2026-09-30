@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- End call phone with diagonal slash -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16.49,11.08c-0.29,-0.29 -0.77,-0.29 -1.06,0l-1.88,1.88c-1.8,-0.92 -3.27,-2.39 -4.19,-4.19l1.88,-1.88c0.29,-0.29 0.29,-0.77 0,-1.06L8.4,2.99C8.11,2.7 7.63,2.7 7.34,2.99L5.27,5.06c-0.28,0.28 -0.4,0.67 -0.34,1.06 0.54,3.48 2.22,6.58 4.75,9.11 2.53,2.53 5.63,4.21 9.11,4.75 0.39,0.06 0.78,-0.06 1.06,-0.34l2.07,-2.07c0.29,-0.29 0.29,-0.77 0,-1.06l-5.43,-5.43z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M3,21L21,3" />
+</vector>

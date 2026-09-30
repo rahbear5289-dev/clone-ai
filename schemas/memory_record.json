@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaMemoryRecord",
+  "description": "Schema for multi-layer persistent and semantic memories in LUNA AI.",
+  "type": "object",
+  "properties": {
+    "memory_id": {
+      "type": "string",
+      "description": "Unique identifier for this memory item (e.g. mem_xyz123)"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Unique identifier of the memory owner"
+    },
+    "content": {
+      "type": "string",
+      "description": "Natural language content of the memory (e.g. 'User prefers short responses.')"
+    },
+    "memory_type": {
+      "type": "string",
+      "description": "Categorical layer of this memory",
+      "enum": [
+        "preference",
+        "fact",
+        "episodic",
+        "semantic",
+        "workflow",
+        "project",
+        "task"
+      ]
+    },
+    "embedding": {
+      "type": "array",
+      "items": { "type": "number" },
+      "description": "Vector embedding coordinates for semantic search (if indexed)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["conversation", "explicit_user_input", "system_observation", "tool_result", "web"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "importance": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.5
+        },
+        "recency_weight": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 1.0
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["source", "created_at", "importance"]
+    }
+  },
+  "required": ["memory_id", "user_id", "content", "memory_type", "metadata"]
+}

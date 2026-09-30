@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_space">#040406</color>
+    <color name="bg_space_dark">#040406</color>
+    <color name="bg_card">#0E111A</color>
+    <color name="bg_input">#1A2030</color>
+
+    <!-- Luna-X -Fi Crimson Neon Red Palette (matching luna.mp4) -->
+    <color name="luna_red">#FF1E27</color>
+    <color name="luna_red_bright">#FF3B44</color>
+    <color name="luna_red_dark">#99000A</color>
+    <color name="luna_crimson">#E50914</color>
+    <color name="luna_red_glow">#FF0033</color>
+
+    <!-- Primary Accent Colors (Orange remapped to Neon Red for system-wide red theme) -->
+    <color name="luna_orange">#FF1E27</color>
+    <color name="luna_orange_bright">#FF3B44</color>
+    <color name="luna_amber">#FF4D55</color>
+    <color name="luna_red_light">#FF6B72</color>
+
+    <color name="bg_control_dark">#12080A</color>
+    <color name="border_control">#301216</color>
+    <color name="bg_pill_dark">#18080B</color>
+    <color name="border_pill">#4A1218</color>
+    <color name="divider_orange">#4DFF1E27</color>
+    <color name="text_luna_white">#FFFFFF</color>
+    <color name="text_offline_white">#F8ECEE</color>
+
+    <!-- Legacy / Compatibility Colors -->
+    <color name="primary_cyan">#FF1E27</color>
+    <color name="neon_blue">#FF3B44</color>
+    <color name="purple_glow">#E50914</color>
+
+    <color name="status_green">#00E676</color>
+    <color name="status_red">#FF1E27</color>
+    <color name="status_amber">#FF9900</color>
+
+    <color name="text_primary">#F4F4F6</color>
+    <color name="text_secondary">#A89DA2</color>
+    <color name="text_muted">#6B5C62</color>
+
+    <color name="border_subtle">#301216</color>
+</resources>

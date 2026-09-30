@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LunaToolManifest",
+  "description": "Standard plugin/tool registration manifest schema for LUNA AI.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Unique identifier for the tool"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the tool"
+    },
+    "description": {
+      "type": "string",
+      "description": "Clear description for LLM router and human developer"
+    },
+    "input_schema": {
+      "type": "object",
+      "description": "JSON schema for tool input arguments"
+    },
+    "output_schema": {
+      "type": "object",
+      "description": "JSON schema for tool output data"
+    },
+    "permissions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Required device or system permissions (e.g. ['phone', 'camera'])"
+    },
+    "risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "default": "low",
+      "description": "Risk assessment level of this tool"
+    },
+    "requires_confirmation": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, user must confirm before execution (e.g. calling, deleting, purchasing)"
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 60000,
+      "default": 5000,
+      "description": "Execution timeout in milliseconds"
+    }
+  },
+  "required": ["name", "version", "description", "permissions"]
+}
