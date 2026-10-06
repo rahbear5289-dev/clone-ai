@@ -154,6 +154,18 @@
 
     </FrameLayout>
 
+    <!-- DEEP RESEARCH AGENT HUD OVERLAY -->
+    <include
+        android:id="@+id/layoutResearchHud"
+        layout="@layout/layout_deep_research_hud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/viewHeaderDivider"
+        app:layout_constraintBottom_toTopOf="@+id/controlsLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- FULL SCREEN CAMERA & VISUALIZATION VIEW -->
     <TextureView
         android:id="@+id/cameraPreviewView"

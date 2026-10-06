@@ -31,7 +31,8 @@ enum class LunaPermission {
     BATTERY_OPTIMIZATION,
     STORAGE,
     BLUETOOTH_SCAN,
-    SMS
+    SMS,
+    EXACT_ALARM
 }
 
 data class PermissionStatus(
@@ -77,6 +78,11 @@ object PermissionCenter {
             LunaPermission.SMS ->
                 hasRuntime(context, Manifest.permission.RECEIVE_SMS) &&
                 hasRuntime(context, Manifest.permission.READ_SMS)
+            LunaPermission.EXACT_ALARM ->
+                if (Build.VERSION.SDK_INT >= 31) {
+                    val am = context.getSystemService(Context.ALARM_SERVICE) as? android.app.AlarmManager
+                    am?.canScheduleExactAlarms() ?: true
+                } else true
         }
         val (label, why) = when (permission) {
             LunaPermission.MICROPHONE -> "Microphone" to "Voice commands need the microphone."
@@ -95,6 +101,7 @@ object PermissionCenter {
             LunaPermission.STORAGE -> "Storage access" to "Reading and writing media files needs storage permission."
             LunaPermission.BLUETOOTH_SCAN -> "Bluetooth" to "Bluetooth device detection needs Bluetooth Scan & Connect permissions."
             LunaPermission.SMS -> "SMS & Messages" to "Auto-reading incoming SMS and message announcements need SMS permission."
+            LunaPermission.EXACT_ALARM -> "Alarm Access" to "Scheduling device alarms accurately requires exact alarm permission."
         }
         return PermissionStatus(permission, granted, label, why)
     }
@@ -130,6 +137,12 @@ object PermissionCenter {
                 putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             }
             LunaPermission.SCREEN_CAPTURE -> Intent(context, ProjectionPermissionActivity::class.java)
+            LunaPermission.EXACT_ALARM ->
+                if (Build.VERSION.SDK_INT >= 31) {
+                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${context.packageName}"))
+                } else {
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
+                }
             else -> Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.parse("package:${context.packageName}")
             }

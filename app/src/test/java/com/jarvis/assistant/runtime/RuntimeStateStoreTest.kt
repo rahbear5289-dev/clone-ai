@@ -52,20 +52,20 @@ class RuntimeStateStoreTest {
     }
 
     @Test
-    fun `expired key is evicted on get`() = runTest(UnconfinedTestDispatcher()) {
+    fun `expired key is evicted on get`() {
         RuntimeStateStore.set("short:ttl:key", "expires_soon", ttlMs = 50L)
         assertNotNull(RuntimeStateStore.get<String>("short:ttl:key"))
 
-        delay(100)
+        Thread.sleep(65)
 
         // After expiry, get should return null
         assertNull(RuntimeStateStore.get<String>("short:ttl:key"))
     }
 
     @Test
-    fun `has returns false for expired key`() = runTest(UnconfinedTestDispatcher()) {
+    fun `has returns false for expired key`() {
         RuntimeStateStore.set("expired:has:key", "value", ttlMs = 50L)
-        delay(100)
+        Thread.sleep(65)
         assertFalse(RuntimeStateStore.has("expired:has:key"))
     }
 

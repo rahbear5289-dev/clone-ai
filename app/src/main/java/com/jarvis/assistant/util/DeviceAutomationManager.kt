@@ -303,109 +303,8 @@ class DeviceAutomationManager(private val context: Context) {
                 DeviceStateStore.requestCancel()
                 CommandResult(true, "Task cancel ho gaya.")
             }
-            DeviceCommand.StopAssistantSession -> stopAssistantSessionResult()
-        }
-    } catch (e: Exception) {
-        Log.e(TAG, "Command execution failed: ${e.message}", e)
-        CommandResult(false, "Sorry, something went wrong running that command.")
-    } finally {
-        DeviceStateStore.update { it.copy(currentTask = null) }
-    } kar diya.")
-                } else {
-                    MediaPlaybackController.seek(context, command.seconds * 1000L * if (command.forward) 1 else -1)
-                }
-            }
-            is DeviceCommand.MediaSpeed -> {
-                val a11y = LunaAccessibilityService.instance
-                if (a11y != null) {
-                    a11y.configureYouTubePlayerSetting("speed", command.speedLabel)
-                    CommandResult(true, "Playback speed ${command.speedLabel} set kar di.")
-                } else {
-                    clickPlayerSetting("playback speed", command.speedLabel)
-                }
-            }
-            is DeviceCommand.MediaQuality -> {
-                val a11y = LunaAccessibilityService.instance
-                if (a11y != null) {
-                    a11y.configureYouTubePlayerSetting("quality", command.qualityLabel)
-                    CommandResult(true, "Video quality ${command.qualityLabel} set kar di.")
-                } else {
-                    clickPlayerSetting("quality", command.qualityLabel)
-                }
-            }
-            DeviceCommand.StopAssistantSession -> stopAssistantSessionResult()
-            DeviceCommand.CameraTakePhoto -> takeCameraPhotoResult()
-            is DeviceCommand.CameraRecordVideo -> recordCameraVideoResult(command.durationSeconds)
-            DeviceCommand.CameraSwitchLens -> switchCameraLensResult()
-            is DeviceCommand.SpotifySearch -> searchSpotify(command.query, command.autoPlay)
-            DeviceCommand.RandomMusic -> playRandomMusic()
-            is DeviceCommand.PhoneCall -> phoneCallResult(command.target)
-            DeviceCommand.AnswerCall -> if (answerCall()) CommandResult(true, "Call receive kar diya.")
-                else CommandResult(false, "Call receive nahi ho saka. Phone permission check karo.")
-            DeviceCommand.EndCall -> if (endCall()) CommandResult(true, "Call end kar diya.")
-                else CommandResult(false, "Call end nahi ho saka.")
-            is DeviceCommand.Speaker -> {
-                setSpeakerphone(command.on)
-                CommandResult(true, if (command.on) "Speaker on ho gaya." else "Speaker off ho gaya.")
-            }
-            is DeviceCommand.CallMute -> {
-                setMicMute(command.muted)
-                CommandResult(true, if (command.muted) "Call mute kar diya." else "Call unmute kar diya.")
-            }
-            is DeviceCommand.WebSearch -> webSearchVerified(command.query, command.openFirst)
-            is DeviceCommand.BrowserAction -> browserAction(command.action)
-            is DeviceCommand.ScreenAnalyze -> analyzeScreen(command.prompt)
-            DeviceCommand.ScreenOff -> {
-                overlay.hideVisualization()
-                CommandResult(true, "Screen visualization mode off.")
-            }
-            DeviceCommand.ScreenOcr -> analyzeScreen("Read all visible text on the screen. Return the extracted text cleanly.")
-            is DeviceCommand.ReadNotifications -> readNotifications(command.appHint)
-            DeviceCommand.BatteryStatus -> batteryStatus()
-            DeviceCommand.TimeNow -> timeNow()
-            DeviceCommand.DateNow -> dateNow()
-            DeviceCommand.LocationNow -> locationNow()
-            DeviceCommand.WeatherNow -> weatherNow()
-            is DeviceCommand.Torch -> torchResult(command.on)
-            is DeviceCommand.VolumeSet -> {
-                setVolume(command.percent ?: 50)
-                CommandResult(true, "Volume ${command.percent ?: 50} percent set kar diya.")
-            }
-            is DeviceCommand.VolumeAdjust -> {
-                adjustVolume(command.up)
-                CommandResult(true, if (command.up) "Volume badha diya." else "Volume kam kar diya.")
-            }
-            DeviceCommand.VolumeMute -> {
-                setVolume(0)
-                CommandResult(true, "Volume mute kar diya.")
-            }
-            is DeviceCommand.BrightnessSet -> setBrightness(command.percent ?: 50)
-            is DeviceCommand.BrightnessAdjust -> adjustBrightness(command.up)
-            is DeviceCommand.OpenSettingsPanel -> openPanel(command.which)
-            is DeviceCommand.SetAlarm -> setAlarm(command)
-            is DeviceCommand.SetReminder -> setReminder(command)
-            is DeviceCommand.InstallApp -> installApp(command.appName)
-            is DeviceCommand.UninstallApp -> uninstallApp(command.appName)
-            is DeviceCommand.PlayStoreSearch -> playStoreSearch(command.query)
-            DeviceCommand.OpenGallery -> openAppVerified("gallery")
-            is DeviceCommand.ManagePhotos -> managePhotos(command.action)
-            is DeviceCommand.PhoneCallControl -> phoneCallControl(command.action)
-            is DeviceCommand.WhatsAppMediaControl -> playFirstVisibleMedia()
-            is DeviceCommand.SetScreenVisualization -> {
-                if (command.enable) {
-                    overlay.showVisualization()
-                    CommandResult(true, "Screen visualization mode on ho gaya. Orange border indicator active hai.")
-                } else {
-                    overlay.hideVisualization()
-                    CommandResult(true, "Screen visualization mode off ho gaya.")
-                }
-            }
-            is DeviceCommand.GetDeviceStatus -> getDeviceStatus(command.queryType)
-            is DeviceCommand.CodeAutomation -> handleCodeAutomation(command.prompt, command.editor)
-            DeviceCommand.CancelTask -> {
-                DeviceStateStore.requestCancel()
-                CommandResult(true, "Task cancel ho gaya.")
-            }
+            is DeviceCommand.Navigate -> com.jarvis.assistant.automation.NavigationService.getInstance(context).startNavigation(command.destination)
+            is DeviceCommand.ConfigureAutoResponse -> com.jarvis.assistant.automation.AutoResponseService.getInstance(context).setAutoResponse(command.enabled, command.message)
         }
     } catch (e: Exception) {
         Log.e(TAG, "Command execution failed: ${e.message}", e)
@@ -875,7 +774,6 @@ class DeviceAutomationManager(private val context: Context) {
         val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
             putExtra(android.app.SearchManager.QUERY, query)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            setPackage("com.android.chrome")
         }
         if (BackgroundActivityLauncher.launch(context, intent)) return true
         return openUrl("https://www.google.com/search?q=${URLEncoder.encode(query, "UTF-8")}")
@@ -885,11 +783,17 @@ class DeviceAutomationManager(private val context: Context) {
         val formattedUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
             "https://$url"
         } else url
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(formattedUrl)).apply {
+        val chromeIntent = Intent(Intent.ACTION_VIEW, Uri.parse(formattedUrl)).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             setPackage("com.android.chrome")
         }
-        return BackgroundActivityLauncher.launch(context, intent)
+        if (BackgroundActivityLauncher.launch(context, chromeIntent)) return true
+
+        // Universal fallback to default browser
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(formattedUrl)).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return BackgroundActivityLauncher.launch(context, browserIntent)
     }
 
     private suspend fun webSearchVerified(query: String, openFirst: Boolean): CommandResult {
@@ -1336,39 +1240,13 @@ class DeviceAutomationManager(private val context: Context) {
     }
 
     private fun setAlarm(cmd: DeviceCommand.SetAlarm): CommandResult {
-        return try {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, cmd.hour.coerceIn(0, 23))
-                set(Calendar.MINUTE, cmd.minute.coerceIn(0, 59))
-                set(Calendar.SECOND, 0)
-                if (cmd.tomorrow || calendar.before(Calendar.getInstance())) {
-                    add(Calendar.DAY_OF_YEAR, 1)
-                }
-            }
+        return com.jarvis.assistant.automation.AlarmService.getInstance(context)
+            .scheduleAlarm(cmd.hour, cmd.minute, cmd.tomorrow, cmd.message)
+    }
 
-            val intent = Intent(context, com.jarvis.assistant.automation.AlarmReceiver::class.java).apply {
-                putExtra("alarm_type", "alarm")
-                putExtra("alarm_message", cmd.message ?: "Luna Alarm")
-            }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                cmd.hour * 100 + cmd.minute,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-            }
-
-            CommandResult(true, "Alarm ${cmd.hour}:${cmd.minute.toString().padStart(2, '0')} ka set kar diya.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to set alarm: ${e.message}")
-            CommandResult(false, "Alarm set nahi ho saka.")
-        }
+    private fun setTimer(cmd: DeviceCommand.SetTimer): CommandResult {
+        return com.jarvis.assistant.automation.AlarmService.getInstance(context)
+            .scheduleTimer(cmd.durationSeconds, cmd.message)
     }
 
 

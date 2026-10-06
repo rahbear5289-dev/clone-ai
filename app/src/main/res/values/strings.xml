@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Luna</string>
-    <string name="jarvis_title">Luna-X</string>
-    <string name="app_title_luna">LUNA</string>
-    <string name="app_title_suffix">-X</string>
+    <string name="app_name">IRIS-MX</string>
+    <string name="jarvis_title">IRIS-MX</string>
+    <string name="app_title_luna">IRIS</string>
+    <string name="app_title_suffix">-MX</string>
 
     <string name="state_idle">IDLE</string>
     <string name="state_listening">LISTENING</string>
@@ -18,7 +18,7 @@
     <string name="btn_stop_ai">STOP AI</string>
     <string name="slide_to_start">SLIDE TO START »»</string>
     <string name="slide_to_stop">«« SLIDE TO STOP</string>
-    <string name="app_title_Luna">Luna</string>
+    <string name="app_title_Luna">IRIS</string>
     <string name="app_title_mx">-MX</string>
     <string name="status_ready">READY</string>
     <string name="status_live">LIVE</string>
@@ -49,10 +49,10 @@
     <string name="btn_save">Save</string>
     <string name="btn_paste">Paste from clipboard</string>
     <string name="chat_label_you">YOU</string>
-    <string name="chat_label_jarvis">LUNA-X</string>
-    <string name="accessibility_service_label">Luna Accessibility</string>
-    <string name="accessibility_service_description">Lets Luna tap Send, Back, Home, and verify which app is on screen after you grant this service. Used only for voice-driven assistive control.</string>
-    <string name="notification_listener_label">Luna Notification Access</string>
+    <string name="chat_label_jarvis">IRIS-MX</string>
+    <string name="accessibility_service_label">IRIS Ghost Service</string>
+    <string name="accessibility_service_description">Lets IRIS tap Send, Back, Home, and verify which app is on screen after you grant this service. Used only for voice-driven assistive control.</string>
+    <string name="notification_listener_label">IRIS Notification Service</string>
     <string name="state_executing">EXECUTING</string>
     <string name="state_screen_viewing">SCREEN VIEWING</string>
     <string name="state_background">BACKGROUND</string>

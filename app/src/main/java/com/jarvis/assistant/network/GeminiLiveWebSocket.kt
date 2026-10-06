@@ -642,6 +642,40 @@ class GeminiLiveWebSocket(
                 name = "clear_memories",
                 description = "Permanently delete all saved memories, only when the user explicitly asks to clear all memory.",
                 parameters = FunctionParametersPayload(type = "OBJECT")
+            ),
+            FunctionDeclarationPayload(
+                name = "navigate_to",
+                description = "Starts Google Maps navigation from device GPS location to the specified destination.",
+                parameters = FunctionParametersPayload(
+                    type = "OBJECT",
+                    properties = mapOf(
+                        "destination" to PropertySchemaPayload("STRING", "Destination name or address (e.g. 'Mumbai Airport', 'home', 'office')")
+                    ),
+                    required = listOf("destination")
+                )
+            ),
+            FunctionDeclarationPayload(
+                name = "deep_research",
+                description = "Performs multi-source Tavily Web Search and deep research when user asks for latest news, today's sports scores/matches, current prices, or real-time web facts.",
+                parameters = FunctionParametersPayload(
+                    type = "OBJECT",
+                    properties = mapOf(
+                        "query" to PropertySchemaPayload("STRING", "Search query for Tavily Web Search")
+                    ),
+                    required = listOf("query")
+                )
+            ),
+            FunctionDeclarationPayload(
+                name = "set_auto_response",
+                description = "Enables or disables automatic rule-based replies to incoming messages when user is sleeping or busy.",
+                parameters = FunctionParametersPayload(
+                    type = "OBJECT",
+                    properties = mapOf(
+                        "enabled" to PropertySchemaPayload("STRING", "'true' to enable, 'false' to disable"),
+                        "message" to PropertySchemaPayload("STRING", "Custom reply text, e.g. 'Sir is currently sleeping.'")
+                    ),
+                    required = listOf("enabled")
+                )
             )
         )
         return listOf(ToolPayload(declarations))

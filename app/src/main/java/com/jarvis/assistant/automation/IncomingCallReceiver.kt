@@ -38,16 +38,17 @@ class IncomingCallReceiver : BroadcastReceiver() {
 
                 lastRingingCallerName = callerName
 
-                val announcement = if (callerName != null) {
-                    "$callerName ka phone aa raha hai. Uthana hai ya cancel karna hai?"
-                } else if (number.isNotEmpty()) {
-                    "Unknown number $number se call aa raha hai. Uthana hai ya cancel karna hai?"
-                } else {
-                    "Ek naya call aa raha hai. Uthana hai ya cancel karna hai?"
-                }
+                val app = context.applicationContext as? com.jarvis.assistant.JarvisApp
+                if (app?.preferences?.isCallerAnnouncementEnabled != false) {
+                    val announcement = if (callerName != null) {
+                        "$callerName is calling."
+                    } else {
+                        "An unknown person is calling."
+                    }
 
-                // Announce to user immediately via active assistant service
-                JarvisConversationService.instance?.announceIncomingCall(announcement, number, callerName)
+                    // Announce to user immediately via active assistant service
+                    JarvisConversationService.instance?.announceIncomingCall(announcement, number, callerName)
+                }
             }
             TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 isRinging = false

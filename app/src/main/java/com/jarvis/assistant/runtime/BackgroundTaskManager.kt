@@ -41,7 +41,7 @@ data class BackgroundTask(
 object BackgroundTaskManager : LunaLifecycle {
     private const val TAG = "BackgroundTaskManager"
 
-    private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val activeTasks = ConcurrentHashMap<String, BackgroundTask>()
     private val taskJobs = ConcurrentHashMap<String, Job>()
     private val taskCounter = AtomicLong(0)
@@ -127,7 +127,7 @@ object BackgroundTaskManager : LunaLifecycle {
                 val failedTask = (activeTasks[taskId] ?: initialTask).copy(
                     state = TaskState.FAILED,
                     completedAt = System.currentTimeMillis(),
-                    errorMessage = "Operation timed out after ${timeoutMs}ms"
+                    errorMessage = "Task timeout: Operation timed out after ${timeoutMs}ms"
                 )
                 activeTasks[taskId] = failedTask
 
@@ -223,6 +223,9 @@ object BackgroundTaskManager : LunaLifecycle {
     // -------------------------------------------------------------------------
 
     override fun start() {
+        if (!managerScope.isActive) {
+            managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+        }
         isRunning = true
         LunaLogger.i(TAG, "BackgroundTaskManager started")
     }

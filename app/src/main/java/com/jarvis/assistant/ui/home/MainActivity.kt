@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         setupCallControls()
         setupVisionObservers()
+        setupResearchObservers()
         observeViewModel()
     }
 
@@ -504,6 +505,86 @@ class MainActivity : AppCompatActivity() {
             binding.btnMic.imageTintList = ColorStateList.valueOf(
                 ContextCompat.getColor(this, R.color.luna_red)
             )
+        }
+    }
+
+    private fun setupResearchObservers() {
+        val researchService = com.jarvis.assistant.network.DeepResearchService.getInstance(this)
+
+        binding.layoutResearchHud.btnCancelResearch.setOnClickListener {
+            researchService.cancelActiveResearch()
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                researchService.currentState.collect { state ->
+                    when (state) {
+                        is com.jarvis.assistant.network.ResearchState.Idle,
+                        is com.jarvis.assistant.network.ResearchState.Cancelled -> {
+                            binding.layoutResearchHud.root.visibility = View.GONE
+                            binding.orbContainer.visibility = View.VISIBLE
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Detecting -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = state.message
+                            binding.layoutResearchHud.tvResearchResultPreview.visibility = View.GONE
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Searching -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = state.message
+                            binding.layoutResearchHud.tvResearchResultPreview.visibility = View.GONE
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Analyzing -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = "${state.message} (${state.sourceCount} sources)"
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Verifying -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = state.message
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Synthesizing -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = state.message
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Completed -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = "Research complete"
+                            binding.layoutResearchHud.tvResearchResultPreview.visibility = View.VISIBLE
+                            binding.layoutResearchHud.tvResearchResultPreview.text = state.answer
+                            launch {
+                                kotlinx.coroutines.delay(8000)
+                                if (researchService.currentState.value is com.jarvis.assistant.network.ResearchState.Completed) {
+                                    binding.layoutResearchHud.root.visibility = View.GONE
+                                    binding.orbContainer.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        is com.jarvis.assistant.network.ResearchState.Failed -> {
+                            binding.layoutResearchHud.root.visibility = View.VISIBLE
+                            binding.orbContainer.visibility = View.GONE
+                            binding.layoutResearchHud.tvActiveQueryText.text = state.query
+                            binding.layoutResearchHud.tvStatusMessage.text = state.error
+                            launch {
+                                kotlinx.coroutines.delay(4000)
+                                binding.layoutResearchHud.root.visibility = View.GONE
+                                binding.orbContainer.visibility = View.VISIBLE
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

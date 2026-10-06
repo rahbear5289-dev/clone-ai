@@ -31,6 +31,55 @@ object ContactResolver {
         allContacts = null
     }
 
+    /**
+     * Resolves an exact phone number (from incoming call or SMS) to a ContactMatch.
+     * Uses normalized digits and PhoneLookup/cached contacts.
+     */
+    fun findExact(context: Context, rawNumber: String): ContactMatch? {
+        val clean = rawNumber.trim()
+        if (clean.isBlank()) return null
+        val digits = clean.filter { it.isDigit() }
+        if (digits.length < 5) return null
+
+        // 1. Check PhoneLookup URI if permission granted
+        if (hasPermission(context)) {
+            try {
+                val lookupUri = android.net.Uri.withAppendedPath(
+                    ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+                    android.net.Uri.encode(clean)
+                )
+                context.contentResolver.query(
+                    lookupUri,
+                    arrayOf(
+                        ContactsContract.PhoneLookup._ID,
+                        ContactsContract.PhoneLookup.DISPLAY_NAME,
+                        ContactsContract.PhoneLookup.NUMBER
+                    ),
+                    null,
+                    null,
+                    null
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val id = cursor.getString(0) ?: ""
+                        val name = cursor.getString(1) ?: ""
+                        val number = cursor.getString(2) ?: clean
+                        if (name.isNotBlank()) {
+                            return ContactMatch(id, name, number)
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        // 2. Fallback: match last 10 digits against loaded contacts
+        val last10 = if (digits.length >= 10) digits.takeLast(10) else digits
+        val contacts = loadAll(context)
+        return contacts.firstOrNull { c ->
+            val cDigits = c.number.filter { it.isDigit() }
+            cDigits == digits || (last10.length >= 7 && cDigits.endsWith(last10))
+        }
+    }
+
     private fun loadAll(context: Context): List<ContactMatch> {
         allContacts?.let { return it }
         if (!hasPermission(context)) return emptyList()

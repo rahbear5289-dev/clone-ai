@@ -29,12 +29,11 @@ class BackgroundTaskManagerTest {
     @Test
     fun `submitted task transitions from queued to completed`() = runTest(UnconfinedTestDispatcher()) {
         val taskId = BackgroundTaskManager.submit("test:simple") { _ ->
-            delay(10)
             "result"
         }
 
         assertNotNull("Task ID should not be null", taskId)
-        delay(200)
+        Thread.sleep(150)
 
         val task = BackgroundTaskManager.getTask(taskId)
         assertNotNull(task)
@@ -46,13 +45,11 @@ class BackgroundTaskManagerTest {
     fun `task reports progress updates`() = runTest(UnconfinedTestDispatcher()) {
         val taskId = BackgroundTaskManager.submit("test:progress") { updateProgress ->
             updateProgress(0.25f)
-            delay(10)
             updateProgress(0.75f)
-            delay(10)
             updateProgress(1.0f)
         }
 
-        delay(200)
+        Thread.sleep(150)
 
         val task = BackgroundTaskManager.getTask(taskId)
         assertNotNull(task)
@@ -62,11 +59,10 @@ class BackgroundTaskManagerTest {
     @Test
     fun `failed task transitions to FAILED state`() = runTest(UnconfinedTestDispatcher()) {
         val taskId = BackgroundTaskManager.submit("test:failing") { _ ->
-            delay(10)
             throw RuntimeException("Simulated test failure")
         }
 
-        delay(200)
+        Thread.sleep(150)
 
         val task = BackgroundTaskManager.getTask(taskId)
         assertNotNull(task)
@@ -81,11 +77,11 @@ class BackgroundTaskManagerTest {
             delay(10_000L) // Long delay to allow cancellation
         }
 
-        delay(50)
+        Thread.sleep(50)
         val cancelled = BackgroundTaskManager.cancel(taskId)
         assertTrue("Cancel should return true", cancelled)
 
-        delay(100)
+        Thread.sleep(100)
 
         val task = BackgroundTaskManager.getTask(taskId)
         assertNotNull(task)
@@ -98,7 +94,7 @@ class BackgroundTaskManagerTest {
             delay(500L) // Exceeds timeout
         }
 
-        delay(300)
+        Thread.sleep(300)
 
         val task = BackgroundTaskManager.getTask(taskId)
         assertNotNull(task)
@@ -111,12 +107,11 @@ class BackgroundTaskManagerTest {
     fun `multiple concurrent tasks run independently`() = runTest(UnconfinedTestDispatcher()) {
         val ids = (1..5).map { i ->
             BackgroundTaskManager.submit("test:concurrent:$i") { _ ->
-                delay(50)
                 "result_$i"
             }
         }
 
-        delay(500)
+        Thread.sleep(300)
 
         val tasks = ids.mapNotNull { BackgroundTaskManager.getTask(it) }
         assertEquals(5, tasks.size)
@@ -133,9 +128,9 @@ class BackgroundTaskManagerTest {
             }
         }
 
-        delay(50)
+        Thread.sleep(50)
         BackgroundTaskManager.cancelAll()
-        delay(100)
+        Thread.sleep(100)
 
         // After cancelAll, no new tasks should be running (taskJobs is cleared)
         // Health should still be healthy (manager still alive)

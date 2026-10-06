@@ -36,14 +36,16 @@ class LunaEventBusTest {
             received.add(event)
         }
 
+        Thread.sleep(60)
+
         val event = LunaEvent(type = LunaEventTypes.VOICE_STARTED, payload = mapOf("source" to "test"))
         LunaEventBus.publish(event)
 
-        delay(50)
+        Thread.sleep(150)
 
         assertTrue("Should receive published event", received.isNotEmpty())
         assertEquals(LunaEventTypes.VOICE_STARTED, received.first().type)
-        assertEquals("test", received.first().payload["source"])
+        assertEquals("test", received.first().payload?.get("source"))
 
         subscription.unsubscribe()
     }
@@ -60,7 +62,7 @@ class LunaEventBusTest {
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.TOOL_COMPLETED, payload = mapOf("function" to "open_app")))
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.WAKE_WORD_DETECTED))
 
-        delay(50)
+        Thread.sleep(150)
 
         assertEquals(1, voiceEvents.size)
         assertEquals(1, toolEvents.size)
@@ -87,12 +89,13 @@ class LunaEventBusTest {
     fun `subscribeAll receives events of any type`() = runTest(UnconfinedTestDispatcher()) {
         val received = mutableListOf<LunaEvent>()
         val sub = LunaEventBus.subscribeAll { received.add(it) }
+        Thread.sleep(60)
 
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.VOICE_STARTED))
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.TOOL_STARTED))
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.WAKE_WORD_DETECTED))
 
-        delay(100)
+        Thread.sleep(150)
 
         assertTrue("subscribeAll should receive multiple event types", received.size >= 3)
 
@@ -123,14 +126,15 @@ class LunaEventBusTest {
         val payload = mapOf("function" to "open_app", "callId" to "abc123", "success" to "true")
         val received = mutableListOf<LunaEvent>()
         val sub = LunaEventBus.subscribe(LunaEventTypes.TOOL_COMPLETED) { received.add(it) }
+        Thread.sleep(60)
 
         LunaEventBus.publish(LunaEvent(type = LunaEventTypes.TOOL_COMPLETED, payload = payload))
-        delay(50)
+        Thread.sleep(150)
 
         assertEquals(1, received.size)
-        assertEquals("open_app", received.first().payload["function"])
-        assertEquals("abc123", received.first().payload["callId"])
-        assertEquals("true", received.first().payload["success"])
+        assertEquals("open_app", received.first().payload?.get("function"))
+        assertEquals("abc123", received.first().payload?.get("callId"))
+        assertEquals("true", received.first().payload?.get("success"))
 
         sub.unsubscribe()
     }

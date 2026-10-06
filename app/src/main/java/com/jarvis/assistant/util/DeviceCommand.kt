@@ -76,6 +76,8 @@ sealed class DeviceCommand {
     object CameraTakePhoto : DeviceCommand()
     data class CameraRecordVideo(val durationSeconds: Int = 30) : DeviceCommand()
     object CameraSwitchLens : DeviceCommand()
+    data class Navigate(val destination: String) : DeviceCommand()
+    data class ConfigureAutoResponse(val enabled: Boolean, val message: String? = null) : DeviceCommand()
 }
 
 object WebsiteCatalog {

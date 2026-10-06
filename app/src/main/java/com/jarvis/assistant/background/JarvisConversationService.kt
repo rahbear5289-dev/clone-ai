@@ -27,7 +27,7 @@ import com.jarvis.assistant.JarvisApp
 import com.jarvis.assistant.data.memory.LunaMemoryDatabase
 import com.jarvis.assistant.data.memory.MemoryRepository
 import com.jarvis.assistant.audio.VoskModelManager
-import org.json.JSONObject
+import org.json.JSONObject  
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener as VoskRecognitionListener
 import org.vosk.android.SpeechService
@@ -372,10 +372,6 @@ class JarvisConversationService : Service() {
         inactivityJob = null
         pendingDeviceCommandJob?.cancel()
         pendingDeviceCommandJob = null
-        startupPulseJob?.cancel()
-        startupPulseJob = null
-        startupTts?.shutdown()
-        startupTts = null
         releaseFeedbackTts()
         _isSessionOn.value = false
         finalizeTurn()
@@ -677,7 +673,53 @@ class JarvisConversationService : Service() {
         pendingDeviceCommandJob?.cancel()
         pendingDeviceCommandJob = serviceScope.launch {
             delay(350)
-            executeDeviceCommand(text)
+            val intentResolution = com.jarvis.assistant.runtime.SmartIntentRouter.route(text)
+            when (intentResolution.intent) {
+                com.jarvis.assistant.runtime.SmartIntentRouter.UserIntent.RESEARCH -> {
+                    LunaLogger.i("JarvisService", "SmartIntentRouter triggered DEEP RESEARCH for: '$text'")
+                    _conversationState.value = ConversationState.THINKING
+                    val deepResearch = com.jarvis.assistant.network.DeepResearchService.getInstance(applicationContext)
+                    deepResearch.startResearch(
+                        userQuery = text,
+                        onComplete = { output ->
+                            serviceScope.launch {
+                                _events.emit(output.finalAnswer)
+                                (application as? JarvisApp)?.chatRepository?.addTurn(
+                                    userText = text,
+                                    jarvisText = output.finalAnswer
+                                )
+                                speakFeedback(output.finalAnswer)
+                            }
+                        },
+                        onError = { err ->
+                            serviceScope.launch {
+                                _events.emit(err)
+                                speakFeedback(err)
+                            }
+                        }
+                    )
+                }
+                com.jarvis.assistant.runtime.SmartIntentRouter.UserIntent.NAVIGATION -> {
+                    val dest = intentResolution.parameters["destination"] ?: ""
+                    val navResult = com.jarvis.assistant.automation.NavigationService.getInstance(applicationContext).startNavigation(dest)
+                    _events.emit(navResult.spoken)
+                    speakFeedback(navResult.spoken)
+                }
+                com.jarvis.assistant.runtime.SmartIntentRouter.UserIntent.AUTO_RESPONSE -> {
+                    val enable = intentResolution.parameters["enable"] != "false"
+                    val customMsg = intentResolution.parameters["message"]?.takeIf { it.isNotBlank() }
+                    val autoResult = com.jarvis.assistant.automation.AutoResponseService.getInstance(applicationContext).setAutoResponse(enable, customMsg)
+                    _events.emit(autoResult.spoken)
+                    speakFeedback(autoResult.spoken)
+                }
+                com.jarvis.assistant.runtime.SmartIntentRouter.UserIntent.CHAT -> {
+                    // Normal Conversational AI query: let Gemini Live WebSocket stream natural response
+                }
+                else -> {
+                    // Action commands (Alarms, volume, torch, calls, apps, etc.)
+                    executeDeviceCommand(text)
+                }
+            }
         }
     }
 
@@ -705,9 +747,9 @@ class JarvisConversationService : Service() {
      * the duration so the TTS output is never transcribed back as user speech
      * (the audio-to-text mismatch bug).
      */
-    private fun speakFeedback(text: String) {
-        // Robotic TTS is suppressed when Gemini Live is active to ensure ONLY the personal AI voice speaks
-        if (liveWebSocket != null || _conversationState.value == ConversationState.SPEAKING) return
+    private fun speakFeedback(text: String, force: Boolean = false) {
+        // Robotic TTS is suppressed when Gemini Live is active to ensure ONLY the personal AI voice speaks, unless forced
+        if (!force && (liveWebSocket != null || _conversationState.value == ConversationState.SPEAKING)) return
         feedbackSpeaking = true
         feedbackTts?.shutdown()
         feedbackTts = TextToSpeech(this) { status ->
@@ -730,14 +772,41 @@ class JarvisConversationService : Service() {
         feedbackTts = null
     }
 
+    fun announceIncomingCall(announcement: String, number: String, callerName: String?) {
+        serviceScope.launch {
+            _events.emit(announcement)
+            speakFeedback(announcement, force = true)
+        }
+    }
+
+    fun onCallEnded() {
+        LunaLogger.i("JarvisService", "Incoming call ended.")
+    }
+
+    fun announceMessage(announcement: String) {
+        serviceScope.launch {
+            _events.emit(announcement)
+            speakFeedback(announcement, force = true)
+        }
+    }
+
     private fun handleModelToolCall(callId: String, functionName: String, args: Map<String, String>) {
         BackgroundTaskManager.submit(name = "tool:$functionName", timeoutMs = 30_000L) { _ ->
         @Suppress("UNUSED_EXPRESSION")
         serviceScope.launch {
             val result = try {
-                when (functionName) {
-                    "remember_fact", "recall_memories", "forget_memory", "clear_memories" -> {
-                        val app = application as JarvisApp
+                val irisRegistry = com.jarvis.assistant.iris.IrisToolRegistry.getInstance(applicationContext)
+                val irisTool = irisRegistry.getTool(functionName)
+                if (irisTool != null) {
+                    val jsonArgs = com.google.gson.JsonObject().apply {
+                        args.forEach { (k, v) -> addProperty(k, v) }
+                    }
+                    val toolResult = irisTool.execute(jsonArgs)
+                    com.jarvis.assistant.util.CommandResult(toolResult.success, toolResult.spoken)
+                } else {
+                    when (functionName) {
+                        "remember_fact", "recall_memories", "forget_memory", "clear_memories" -> {
+                            val app = application as JarvisApp
                         if (!app.preferences.isMemoryEnabled) {
                             com.jarvis.assistant.util.CommandResult(false, "Memory is turned off. You can enable it in Settings.")
                         } else {
@@ -915,8 +984,32 @@ class JarvisConversationService : Service() {
                         DeviceCommand.CodeAutomation(args["prompt"] ?: "", args["editor"])
                     )
                     "cancel_task" -> deviceManager.executeAsync(DeviceCommand.CancelTask)
+                    "navigate_to", "start_navigation" -> {
+                        val dest = args["destination"] ?: ""
+                        com.jarvis.assistant.automation.NavigationService.getInstance(applicationContext).startNavigation(dest)
+                    }
+                    "deep_research", "tavily_search" -> {
+                        val query = args["query"] ?: ""
+                        val lock = kotlinx.coroutines.CompletableDeferred<com.jarvis.assistant.util.CommandResult>()
+                        com.jarvis.assistant.network.DeepResearchService.getInstance(applicationContext).startResearch(
+                            userQuery = query,
+                            onComplete = { output ->
+                                lock.complete(com.jarvis.assistant.util.CommandResult(true, output.finalAnswer))
+                            },
+                            onError = { err ->
+                                lock.complete(com.jarvis.assistant.util.CommandResult(false, err))
+                            }
+                        )
+                        lock.await()
+                    }
+                    "set_auto_response", "auto_response" -> {
+                        val enable = args["enabled"] != "false"
+                        val msg = args["message"]
+                        com.jarvis.assistant.automation.AutoResponseService.getInstance(applicationContext).setAutoResponse(enable, msg)
+                    }
                     else -> deviceManager.executeSequence(functionName.replace('_', ' ') + " " + args.values.joinToString(" "))
                 }
+            }
             } catch (e: Exception) {
                 LunaLogger.e("JarvisService", "Tool $functionName failed: ${e.message}", e)
                 com.jarvis.assistant.util.CommandResult(false, "Action fail ho gayi.")

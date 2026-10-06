@@ -24,6 +24,7 @@ object VoiceCommandParser {
         parseTorchVolumeBrightness(text)?.let { return it }
         parseConnectivity(text)?.let { return it }
         parseAlarmReminder(text)?.let { return it }
+        parseAutoResponse(text)?.let { return it }
         parseWhatsApp(text)?.let { return it }
         parseYouTube(text)?.let { return it }
         parseSpotify(text)?.let { return it }
@@ -536,7 +537,34 @@ object VoiceCommandParser {
         return null
     }
 
+    private fun parseAutoResponse(text: String): DeviceCommand? {
+        if (text.contains("auto response") || text.contains("auto reply") || text.contains("automated response")) {
+            val isEnable = !text.contains("off") && !text.contains("disable") && !text.contains("band")
+            val tellMatch = Regex("(?:tell them|bata do|bol do|reply with|reply that|message karo ki|kah do ki)\\s*[:,-]?\\s*(.+)").find(text)
+            val customMsg = tellMatch?.groupValues?.get(1)?.trim()?.takeIf { it.isNotEmpty() }
+            return DeviceCommand.ConfigureAutoResponse(isEnable, customMsg)
+        }
+        return null
+    }
+
     private fun parseNav(text: String): DeviceCommand? {
+        if (text.startsWith("navigate to ") ||
+            text.startsWith("take me to ") ||
+            text.startsWith("open directions to ") ||
+            text.startsWith("directions to ") ||
+            text.startsWith("start navigation to ") ||
+            text.startsWith("start navigation") ||
+            text.startsWith("show me the route to ") ||
+            text.contains("ka rasta dikhao") ||
+            text.contains("ka route dikhao") ||
+            text.contains("navigate karo") ||
+            text.contains("le chalo") ||
+            (text.startsWith("how far is ") && !text.contains("sun") && !text.contains("moon") && !text.contains("mars"))
+        ) {
+            val destination = com.jarvis.assistant.runtime.SmartIntentRouter.extractNavigationDestination(text)
+            return DeviceCommand.Navigate(destination)
+        }
+
         if (text.contains("split") || text.contains("half-half") || text.contains("half half") ||
             (text.contains("upar") && text.contains("neeche"))
         ) return DeviceCommand.SplitScreen

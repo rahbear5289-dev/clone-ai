@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardResearchRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:background="@drawable/bg_research_hud"
+    android:padding="20dp">
+
+    <!-- Top Badge Header: AUTOMATIC RESEARCH AGENT -->
+    <LinearLayout
+        android:id="@+id/headerResearch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnCancelResearch">
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_action_circle_orange"
+            android:backgroundTint="@color/research_cyan" />
+
+        <TextView
+            android:id="@+id/tvResearchTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="AUTOMATIC RESEARCH AGENT"
+            android:textColor="@color/research_cyan"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.14" />
+    </LinearLayout>
+
+    <!-- Close / Cancel Button -->
+    <ImageButton
+        android:id="@+id/btnCancelResearch"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        app:tint="@color/text_secondary"
+        android:contentDescription="Cancel research"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Technical Subtitle: LINX AND TAVILY NEURAL ACTIVITY... -->
+    <TextView
+        android:id="@+id/tvResearchSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="LINX AND TAVILY NEURAL ACTIVITY..."
+        android:textColor="@color/research_text_cyan"
+        android:textSize="10sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.08"
+        app:layout_constraintTop_toBottomOf="@id/headerResearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Thin Dynamic Animated Progress Bar -->
+    <com.jarvis.assistant.ui.research.CyberProgressBar
+        android:id="@+id/cyberProgressBar"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tvResearchSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Label: ACTIVE QUERY -->
+    <TextView
+        android:id="@+id/tvActiveQueryLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="ACTIVE QUERY"
+        android:textColor="@color/text_muted"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.12"
+        app:layout_constraintTop_toBottomOf="@id/cyberProgressBar"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- User's Actual Dynamic Query -->
+    <TextView
+        android:id="@+id/tvActiveQueryText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="What cricket match is happening today?"
+        android:textColor="@color/text_luna_white"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:lineSpacingMultiplier="1.2"
+        app:layout_constraintTop_toBottomOf="@id/tvActiveQueryLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Label: STATUS -->
+    <TextView
+        android:id="@+id/tvStatusLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="STATUS"
+        android:textColor="@color/text_muted"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.12"
+        app:layout_constraintTop_toBottomOf="@id/tvActiveQueryText"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Status Message (e.g. Detecting knowledge gap... / Searching web...) -->
+    <TextView
+        android:id="@+id/tvStatusMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Searching web..."
+        android:textColor="@color/research_cyan"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        android:letterSpacing="0.05"
+        app:layout_constraintTop_toBottomOf="@id/tvStatusLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Completed Synthesized Summary Preview (Gone by default until Completed) -->
+    <TextView
+        android:id="@+id/tvResearchResultPreview"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="#0A1220"
+        android:padding="12dp"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.2"
+        android:visibility="gone"
+        tools:text="India vs Australia match is live today. India scored 182/4 in 20 overs."
+        app:layout_constraintTop_toBottomOf="@id/tvStatusMessage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

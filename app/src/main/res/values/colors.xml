@@ -1,43 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_space">#040406</color>
-    <color name="bg_space_dark">#040406</color>
-    <color name="bg_card">#0E111A</color>
-    <color name="bg_input">#1A2030</color>
+    <!-- IRIS-MX Design System Palette (PRD Section 6) -->
+    <color name="iris_primary">#FF5F1F</color>
+    <color name="iris_primary_glow">#FF7A3D</color>
+    <color name="iris_primary_dark">#D14508</color>
+    <color name="iris_surface_0">#050505</color>
+    <color name="iris_surface_1">#0A0A0D</color>
+    <color name="iris_surface_2">#121214</color>
+    <color name="iris_surface_3">#18181B</color>
 
-    <!-- Luna-X -Fi Crimson Neon Red Palette (matching luna.mp4) -->
-    <color name="luna_red">#FF1E27</color>
-    <color name="luna_red_bright">#FF3B44</color>
-    <color name="luna_red_dark">#99000A</color>
-    <color name="luna_crimson">#E50914</color>
-    <color name="luna_red_glow">#FF0033</color>
+    <color name="bg_space">#050505</color>
+    <color name="bg_space_dark">#050505</color>
+    <color name="bg_card">#0A0A0D</color>
+    <color name="bg_input">#121214</color>
 
-    <!-- Primary Accent Colors (Orange remapped to Neon Red for system-wide red theme) -->
-    <color name="luna_orange">#FF1E27</color>
-    <color name="luna_orange_bright">#FF3B44</color>
-    <color name="luna_amber">#FF4D55</color>
-    <color name="luna_red_light">#FF6B72</color>
+    <!-- Remapped Primary Tokens for IRIS-MX Neon Orange Theme -->
+    <color name="luna_red">#FF5F1F</color>
+    <color name="luna_red_bright">#FF7A3D</color>
+    <color name="luna_red_dark">#B33B0A</color>
+    <color name="luna_crimson">#FF5F1F</color>
+    <color name="luna_red_glow">#FF5F1F</color>
 
-    <color name="bg_control_dark">#12080A</color>
-    <color name="border_control">#301216</color>
-    <color name="bg_pill_dark">#18080B</color>
-    <color name="border_pill">#4A1218</color>
-    <color name="divider_orange">#4DFF1E27</color>
+    <color name="luna_orange">#FF5F1F</color>
+    <color name="luna_orange_bright">#FF7A3D</color>
+    <color name="luna_amber">#F59E0B</color>
+    <color name="luna_red_light">#FFA07A</color>
+
+    <color name="bg_control_dark">#0A0A0D</color>
+    <color name="border_control">#261610</color>
+    <color name="bg_pill_dark">#121214</color>
+    <color name="border_pill">#3D1E12</color>
+    <color name="divider_orange">#4DFF5F1F</color>
     <color name="text_luna_white">#FFFFFF</color>
-    <color name="text_offline_white">#F8ECEE</color>
+    <color name="text_offline_white">#E4E4E7</color>
 
-    <!-- Legacy / Compatibility Colors -->
-    <color name="primary_cyan">#FF1E27</color>
-    <color name="neon_blue">#FF3B44</color>
-    <color name="purple_glow">#E50914</color>
+    <!-- Compatibility Accents -->
+    <color name="primary_cyan">#FF5F1F</color>
+    <color name="neon_blue">#FF7A3D</color>
+    <color name="purple_glow">#FF5F1F</color>
 
-    <color name="status_green">#00E676</color>
-    <color name="status_red">#FF1E27</color>
-    <color name="status_amber">#FF9900</color>
+    <color name="status_green">#10B981</color>
+    <color name="status_red">#EF4444</color>
+    <color name="status_amber">#F59E0B</color>
 
-    <color name="text_primary">#F4F4F6</color>
-    <color name="text_secondary">#A89DA2</color>
-    <color name="text_muted">#6B5C62</color>
+    <color name="text_primary">#FAFAFA</color>
+    <color name="text_secondary">#A1A1AA</color>
+    <color name="text_muted">#71717A</color>
 
-    <color name="border_subtle">#301216</color>
+    <color name="border_subtle">#1F1F23</color>
+
+    <!-- Deep Research HUD Colors -->
+    <color name="research_bg">#04070D</color>
+    <color name="research_card_bg">#090E17</color>
+    <color name="research_cyan">#00E5FF</color>
+    <color name="research_cyan_dark">#0097A7</color>
+    <color name="research_blue">#00B0FF</color>
+    <color name="research_text_cyan">#80D8FF</color>
+    <color name="research_border">#1E293B</color>
 </resources>

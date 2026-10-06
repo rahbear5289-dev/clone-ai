@@ -64,21 +64,35 @@ class NotificationReaderService : NotificationListenerService() {
             if (oldest != null) recent.remove(oldest)
         }
 
-        // Real-time automatic reading for messaging apps (WhatsApp, Telegram, Signal, Messages)
+        // 1. Check Auto Response Mode first
+        AutoResponseService.getInstance(applicationContext).handleIncomingNotification(sbn)
+
+        // 2. Real-time announcement for supported messaging apps (WhatsApp, Telegram, Messages)
         val pkg = sbn.packageName.lowercase()
         if (pkg.contains("whatsapp") || pkg.contains("telegram") || pkg.contains("messaging") || pkg.contains("mms")) {
-            val lowerText = text.lowercase()
-            val mediaDescription = when {
-                lowerText.contains("photo") || lowerText.contains("image") || lowerText.contains("फ़ोटो") || lowerText.contains("तस्वीर") ->
-                    "$title ne photo bheji hai."
-                lowerText.contains("video") || lowerText.contains("वीडियो") ->
-                    "$title ne video bheji hai."
-                lowerText.contains("voice message") || lowerText.contains("audio") || lowerText.contains("ऑडियो") ->
-                    "$title ne voice note bheja hai."
-                else ->
-                    "$title ka message aaya hai: $text"
+            val appLabel = when {
+                pkg.contains("whatsapp") -> "WhatsApp"
+                pkg.contains("telegram") -> "Telegram"
+                else -> "Messages"
             }
-            com.jarvis.assistant.background.JarvisConversationService.instance?.announceMessage(mediaDescription)
+
+            val app = applicationContext as? com.jarvis.assistant.JarvisApp
+            val isReadingEnabled = app?.preferences?.isVoiceNotificationReadingEnabled == true
+
+            val announcement = if (isReadingEnabled) {
+                val lowerText = text.lowercase()
+                val mediaDescription = when {
+                    lowerText.contains("photo") || lowerText.contains("image") -> "photo bheji hai."
+                    lowerText.contains("video") -> "video bheja hai."
+                    lowerText.contains("audio") || lowerText.contains("voice") -> "voice message bheja hai."
+                    else -> text
+                }
+                "$appLabel message from $title: $mediaDescription"
+            } else {
+                "$appLabel message from $title."
+            }
+
+            com.jarvis.assistant.background.JarvisConversationService.instance?.announceMessage(announcement)
         }
     }
 }

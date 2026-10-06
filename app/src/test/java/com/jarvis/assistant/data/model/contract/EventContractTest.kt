@@ -16,7 +16,7 @@ class EventContractTest {
             confidence = 0.98f,
             payload = mapOf("target" to "Chrome")
         )
-
+        
         assertEquals(LunaEventTypes.USER_COMMAND, event.event)
         assertEquals("sess_test_123", event.sessionId)
         assertEquals("open_application", event.intent)
